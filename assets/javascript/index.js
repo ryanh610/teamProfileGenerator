@@ -22,10 +22,21 @@ function createHTML() {
             <title>Team Profile Generator</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
             <link rel="stylesheet" href="./assets/css/styles.css">
-        
         </head>
+
         <body>
-    `
+            <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                    <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+                    <span class="fs-4">Team Profile Generator</span>
+                </a>
+            </header>
+    `;
+    fs.writeFile("./../index.html", html, function(err) {
+        if (err) {
+            console.log(err);
+        }
+    });
 };
 
 function newMember() {
@@ -48,9 +59,10 @@ function newMember() {
         {
             type: 'list',
             message: 'Please enter employee role:',
-        name: 'role',
-        choices: ['Manager', 'Engineer', 'Intern']
-    }
+            choices: ['Manager', 'Engineer', 'Intern'],
+            name: 'role'
+        }
+    ])
     .then(function({name,id,email,role}) {
         let roleInfo = "";
         if (role === 'Manager') {
@@ -65,17 +77,17 @@ function newMember() {
         inquirer.prompt([
             {
                 message: `Enter team member's ${roleInfo}`,
-                name: roleInfo
+                name: 'roleInfo'
             },
             {
                 type: "list",
                 message: "Would you like to add another team member?",
                 choices: ['Yes', 'No'],
-                name: anotherMember
+                name: 'anotherMember'
             }
-        ])
-        .then(function({roleInfo, anotherMember}) {
+        ]).then(function({roleInfo, anotherMember}) {
             let thisMember;
+            
             if (role === 'Manager') {
                 thisMember = new Manager(name, id, email, roleInfo);
             }
@@ -85,18 +97,19 @@ function newMember() {
             if (role === 'Engineer') {
                 thisMember = new Intern(name, id, email, roleInfo);
             }
-            teamMembers.push(anotherMember);
-            memberHTML(anotherMember)
-            .then(function() {
-                if (anotherMember === "yes") {
+            teamMembers.push(thisMember);
+            memberHTML(thisMember)
+            
+            if (anotherMember == 'Yes') {
+                console.log("here!" + anotherMember)
                     newMember();
                 } else {
                     finishHTML();
                 }
-            })
+
         })
-    })
-])};
+    }).catch(e => console.error('ERROR XX', e))
+};
 
 function memberHTML(member) {
     return new Promise(function(resolve, reject) {
@@ -106,10 +119,11 @@ function memberHTML(member) {
         const role = member.getRole();
         let data = "";
         if (role === "Manager") {
-            const officePhone = member.getOfficePhone();
+            const officePhone = member.getOfficeNumber();
             data = `<div class="card" style="width: 18rem;">
             <ul class="list-group list-group-flush">
               <li class="list-group-item">${name}</li>
+              <li class="list-group-item">${role}</li>
               <li class="list-group-item">${id}</li>
               <li class="list-group-item">${email}</li>
               <li class="list-group-item">${officePhone}</li>
@@ -117,10 +131,11 @@ function memberHTML(member) {
           </div>`;
         }
         else if (role === "Engineer") {
-            const gitHub = member.getGitHub();
+            const gitHub = member.getGithub();
             data = `<div class="card" style="width: 18rem;">
             <ul class="list-group list-group-flush">
               <li class="list-group-item">${name}</li>
+              <li class="list-group-item">${role}</li>
               <li class="list-group-item">${id}</li>
               <li class="list-group-item">${email}</li>
               <li class="list-group-item">${gitHub}</li>
@@ -132,13 +147,22 @@ function memberHTML(member) {
             data = `<div class="card" style="width: 18rem;">
             <ul class="list-group list-group-flush">
               <li class="list-group-item">${name}</li>
+              <li class="list-group-item">${role}</li>
               <li class="list-group-item">${id}</li>
               <li class="list-group-item">${email}</li>
               <li class="list-group-item">${school}</li>
             </ul>
           </div>`;
         }
+        fs.appendFile("./../index.html", data, function (err) {
+            if (err) {
+                return rejects(err);
+            };
+            return resolve();
+        });
     })
+
+
 }
 
 function finishHTML() {
@@ -146,8 +170,7 @@ function finishHTML() {
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
         </body>
     </html>`;
-
-    fs.appendFile("./", data, function (err) {
+    fs.appendFile("./../index.html", htmlEnd, function (err) {
         if (err) {
             return rejects(err);
         };
