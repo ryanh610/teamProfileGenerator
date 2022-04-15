@@ -101,11 +101,10 @@ function newMember() {
             memberHTML(thisMember)
             
             if (anotherMember == 'Yes') {
-                console.log("here!" + anotherMember)
-                    newMember();
-                } else {
-                    finishHTML();
-                }
+                newMember();
+            } else {
+                finishHTML();
+            }
 
         })
     }).catch(e => console.error('ERROR XX', e))
